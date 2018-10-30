@@ -1,0 +1,56 @@
+package org.lab409.controller;
+
+
+import org.lab409.entity.Article;
+import org.lab409.entity.ResponseMessage;
+import org.lab409.service.ArticleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
+
+/**
+ * Created by jiao on 2018/10/16.
+ */
+@RestController
+
+public class ArticleController {
+
+    @Autowired
+    ArticleService articleService;
+
+
+
+    @RequestMapping(path = "article/all", method = RequestMethod.GET)
+    public ResponseMessage getArticleBySectorAndKeyword(String SectorName,String SectorState,@RequestParam(value = "userID", defaultValue = "0") Integer userID,@RequestParam(value = "SectorId", defaultValue = "-1") Integer SectorId, @RequestParam(value = "page", defaultValue = "1") Integer page, @RequestParam(value = "count", defaultValue = "6") Integer count,  String keywords) {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        Enumeration enu =
+			    request.getParameterNames();
+        while (enu.hasMoreElements()) {
+			  String paraName = (String) enu.nextElement();
+			  System.out.println(paraName + ": " +
+                     request.getParameter(paraName)); }
+
+
+        List<Article> articles = articleService.getArticleBySectorAndKeyword(SectorName,SectorState,userID,SectorId, page, count, keywords);
+        return new ResponseMessage<>(articles).success();
+    }
+    @RequestMapping(path = "article/all/test", method = RequestMethod.GET)
+    public ResponseMessage getArticle() {
+        List<Article> articles = articleService.getArticle();
+        return new ResponseMessage<>(articles).success();
+    }
+    //向 forum_topic 表中添加数据
+    @RequestMapping(path="article/save",method = RequestMethod.POST)
+    public ResponseMessage saveTopic(@RequestBody Article article){
+        if(articleService.saveTopic(article)){
+            return new ResponseMessage<Article>(null).success();
+        }
+        return new ResponseMessage<Article>(null).error(202,"can't save");
+    }
+
+}
